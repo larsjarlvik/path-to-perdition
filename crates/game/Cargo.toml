@@ -1,0 +1,11 @@
+[package]
+name = "ptp-game"
+authors = ["Lars Jarlvik <lars.jarlvik@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+winit = "0.28"
+log = "0.4"
+wgpu = "0.16"
+pollster = "0.3"
