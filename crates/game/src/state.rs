@@ -5,35 +5,18 @@ use winit::event_loop::EventLoopWindowTarget;
 pub(crate) struct State {
     pub world: world::World,
     pub instance: wgpu::Instance,
-    pub adapter: Option<wgpu::Adapter>,
 }
 
 impl State {
     async fn ensure_render_context_for_surface(&mut self) {
         if let Some(surface) = &self.world.get_resource::<Surface>() {
-            if self.adapter.is_none() {
-                log::info!("WGPU: requesting a suitable adapter (compatible with our surface)");
-                let adapter = self
-                    .instance
-                    .request_adapter(&wgpu::RequestAdapterOptions {
-                        power_preference: wgpu::PowerPreference::default(),
-                        force_fallback_adapter: false,
-                        compatible_surface: Some(&surface.surface),
-                    })
-                    .await
-                    .expect("Failed to find an appropriate adapter");
-
-                self.adapter = Some(adapter);
-            }
-            let adapter = self.adapter.as_ref().unwrap();
-
             if self.world.get_resource::<resources::RenderContext>().is_none() {
                 log::info!("WGPU: finding supported swapchain format");
 
-                let caps = surface.surface.get_capabilities(adapter);
+                let caps = surface.surface.get_capabilities(&surface.adapter);
                 let swapchain_format = caps.formats.iter().copied().find(|f| f.is_srgb()).unwrap_or(caps.formats[0]);
 
-                let ctx = resources::RenderContext::new(adapter, swapchain_format).await;
+                let ctx = resources::RenderContext::new(&surface.adapter, swapchain_format).await;
                 self.world.insert_resource(ctx);
             }
         }
@@ -66,7 +49,8 @@ impl State {
     pub fn resume<T>(&mut self, event_loop: &EventLoopWindowTarget<T>) {
         log::info!("Resumed, creating render state...");
 
-        self.world.insert_resource(resources::Surface::new(&self.instance, event_loop));
+        self.world
+            .insert_resource(pollster::block_on(resources::Surface::new(&self.instance, event_loop)));
         pollster::block_on(self.ensure_render_context_for_surface());
 
         self.configure_surface();

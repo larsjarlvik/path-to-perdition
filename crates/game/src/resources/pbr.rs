@@ -18,7 +18,7 @@ pub(crate) struct Pbr {
 }
 
 impl Pbr {
-    pub fn new(ctx: &super::RenderContext) -> Self {
+    pub fn new(ctx: &super::RenderContext, msaa_sample_count: u32) -> Self {
         let shader = ctx
             .device
             .create_shader_module(wgpu::include_wgsl!("../../../../assets/shaders/pbr.wgsl"));
@@ -93,9 +93,9 @@ impl Pbr {
             },
             depth_stencil: None,
             multisample: wgpu::MultisampleState {
-                count: 1,
+                count: msaa_sample_count,
                 mask: !0,
-                alpha_to_coverage_enabled: false,
+                alpha_to_coverage_enabled: true,
             },
             multiview: None,
         });

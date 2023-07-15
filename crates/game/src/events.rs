@@ -15,7 +15,6 @@ pub async fn run(event_loop: EventLoop<()>) {
     let mut state = state::State {
         world: world::World::new(),
         instance,
-        adapter: None,
     };
 
     let mut app = App::new(&mut state);
