@@ -1,11 +1,20 @@
-use bevy_ecs::system::Resource;
-
 use crate::vertex;
+use bevy_ecs::system::Resource;
+use cgmath::*;
+use wgpu::util::DeviceExt;
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct Uniforms {
+    pub view_proj: [[f32; 4]; 4],
+}
 
 /** Pipeline used to render models with PBR shader */
 #[derive(Resource)]
 pub(crate) struct Pbr {
     pub render_pipeline: wgpu::RenderPipeline,
+    pub uniform_buffer: wgpu::Buffer,
+    pub uniform_bind_group: wgpu::BindGroup,
 }
 
 impl Pbr {
@@ -14,14 +23,47 @@ impl Pbr {
             .device
             .create_shader_module(wgpu::include_wgsl!("../../../../assets/shaders/pbr.wgsl"));
 
+        let uniforms = Uniforms {
+            view_proj: Matrix4::identity().into(),
+        };
+
+        let uniform_buffer = ctx.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("pbr_uniform_buffer"),
+            contents: bytemuck::cast_slice(&[uniforms]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let uniform_bind_group_layout = ctx.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+            label: Some("pbr_uniform_bind_group_layout"),
+        });
+
+        let uniform_bind_group = ctx.device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &uniform_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: uniform_buffer.as_entire_binding(),
+            }],
+            label: Some("camera_bind_group"),
+        });
+
         let render_pipeline_layout = ctx.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("pbr_pipeline_layout"),
-            bind_group_layouts: &[],
+            bind_group_layouts: &[&uniform_bind_group_layout],
             push_constant_ranges: &[],
         });
 
         let render_pipeline = ctx.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Render Pipeline"),
+            label: Some("pbr_render_pipeline"),
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
@@ -58,6 +100,10 @@ impl Pbr {
             multiview: None,
         });
 
-        Self { render_pipeline }
+        Self {
+            render_pipeline,
+            uniform_buffer,
+            uniform_bind_group,
+        }
     }
 }

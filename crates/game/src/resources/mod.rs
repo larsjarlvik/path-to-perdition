@@ -1,5 +1,5 @@
 mod context;
-mod pbr;
+pub mod pbr;
 mod surface;
 
 pub(crate) use context::RenderContext;

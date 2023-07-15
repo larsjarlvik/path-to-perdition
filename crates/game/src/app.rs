@@ -1,4 +1,5 @@
 use bevy_ecs::schedule::Schedule;
+use cgmath::*;
 
 use crate::{
     components::{self, AssetType},
@@ -13,6 +14,7 @@ impl App {
     pub fn new(state: &mut state::State) -> Self {
         state.world.spawn(components::Asset(AssetType::Required));
         state.world.spawn(components::Asset(AssetType::Model));
+        state.world.spawn(components::Camera::new(point3(5.0, 5.0, 10.0)));
 
         let mut schedule = Schedule::default();
         schedule.add_systems(systems::load_asssets);
