@@ -13,7 +13,7 @@ pub struct SurfaceState {
 }
 
 #[derive(Resource)]
-pub struct State {
+pub(crate) struct State {
     pub instance: wgpu::Instance,
     pub adapter: Option<wgpu::Adapter>,
     pub surface_state: Option<SurfaceState>,
@@ -23,6 +23,8 @@ pub struct State {
 impl State {
     fn create_surface<T>(&mut self, event_loop: &EventLoopWindowTarget<T>) {
         let window = winit::window::Window::new(event_loop).unwrap();
+        window.set_title("Path to Perdition");
+
         log::info!("WGPU: creating surface for native window");
         let surface = unsafe { self.instance.create_surface(&window).unwrap() };
         self.surface_state = Some(SurfaceState { window, surface });
@@ -119,6 +121,7 @@ impl State {
     }
 
     pub fn pause(&mut self) {
+        log::info!("Paused, dropping render state...");
         self.render_state = None;
     }
 

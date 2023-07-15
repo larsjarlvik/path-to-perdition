@@ -36,7 +36,7 @@ pub async fn run(event_loop: EventLoop<()>) {
                 }
                 Event::RedrawRequested(_) => {
                     log::info!("Handling Redraw Request");
-                    app.render();
+                    app.update();
                 }
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
