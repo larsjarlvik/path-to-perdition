@@ -15,7 +15,15 @@ ptp-game = { path = "../game" }
 name="ptp_android"
 crate_type=["cdylib"]
 
+[package.metadata.android.application]
+label = "Path to Perdition"
+icon = "@mipmap/ic_launcher"
+theme = "@style/Theme.Default"
+colorMode = "wideColorGamut"
+
 [package.metadata.android]
+resources = "../../res"
+assets = "../../assets"
 build_targets = ["aarch64-linux-android", "armv7-linux-androideabi"]
 
 [package.metadata.android.sdk]

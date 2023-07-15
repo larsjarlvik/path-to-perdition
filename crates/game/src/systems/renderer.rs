@@ -26,7 +26,7 @@ pub(crate) fn render_model(
                 view: &view,
                 resolve_target: None,
                 ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color::BLUE),
+                    load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
                     store: true,
                 },
             })],
