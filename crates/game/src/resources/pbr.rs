@@ -8,18 +8,18 @@ pub(crate) struct Pbr {
 }
 
 impl Pbr {
-    pub fn new(render_state: &super::state::RenderState) -> Self {
-        let shader = render_state
+    pub fn new(ctx: &super::RenderContext) -> Self {
+        let shader = ctx
             .device
             .create_shader_module(wgpu::include_wgsl!("../../../../assets/shaders/pbr.wgsl"));
 
-        let render_pipeline_layout = render_state.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        let render_pipeline_layout = ctx.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("pbr_pipeline_layout"),
             bind_group_layouts: &[],
             push_constant_ranges: &[],
         });
 
-        let render_pipeline = render_state.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        let render_pipeline = ctx.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
             layout: Some(&render_pipeline_layout),
             vertex: wgpu::VertexState {
@@ -31,7 +31,7 @@ impl Pbr {
                 module: &shader,
                 entry_point: "fs_main",
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: render_state.target_format,
+                    format: ctx.target_format,
                     blend: Some(wgpu::BlendState {
                         color: wgpu::BlendComponent::REPLACE,
                         alpha: wgpu::BlendComponent::REPLACE,

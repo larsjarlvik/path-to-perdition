@@ -1,5 +1,7 @@
+mod context;
 mod pbr;
-mod state;
+mod surface;
+
+pub(crate) use context::RenderContext;
 pub(crate) use pbr::Pbr;
-pub(crate) use state::RenderState;
-pub(crate) use state::State;
+pub(crate) use surface::Surface;

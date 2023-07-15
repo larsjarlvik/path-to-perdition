@@ -10,14 +10,14 @@ pub(crate) struct Model {
 }
 
 impl Model {
-    pub fn new(render_state: &resources::RenderState) -> Self {
-        let vertex_buffer = render_state.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+    pub fn new(ctx: &resources::RenderContext) -> Self {
+        let vertex_buffer = ctx.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("model_vertex_buffer"),
             contents: bytemuck::cast_slice(vertex::VERTICES),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
-        let index_buffer = render_state.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        let index_buffer = ctx.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Index Buffer"),
             contents: bytemuck::cast_slice(vertex::INDICES),
             usage: wgpu::BufferUsages::INDEX,
