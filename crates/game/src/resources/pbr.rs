@@ -2,6 +2,7 @@ use bevy_ecs::system::Resource;
 
 use crate::vertex;
 
+/** Pipeline used to render models with PBR shader */
 #[derive(Resource)]
 pub(crate) struct Pbr {
     pub render_pipeline: wgpu::RenderPipeline,

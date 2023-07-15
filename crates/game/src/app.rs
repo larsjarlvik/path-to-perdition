@@ -11,7 +11,7 @@ pub(crate) struct App {
 
 impl App {
     pub fn new(state: &mut state::State) -> Self {
-        state.world.spawn(components::Asset(AssetType::Default));
+        state.world.spawn(components::Asset(AssetType::Required));
         state.world.spawn(components::Asset(AssetType::Model));
 
         let mut schedule = Schedule::default();

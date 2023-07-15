@@ -1,6 +1,7 @@
 use bevy_ecs::system::Resource;
 use winit::event_loop::EventLoopWindowTarget;
 
+/** Window and render surface */
 #[derive(Resource)]
 pub struct Surface {
     pub window: winit::window::Window,

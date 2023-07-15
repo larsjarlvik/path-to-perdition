@@ -2,6 +2,7 @@ use crate::{components, resources};
 use bevy_ecs::system::{Query, Res};
 use std::iter;
 
+/** Renders a model using the PBR pipeline */
 pub(crate) fn render_model(
     ctx: Res<resources::RenderContext>,
     surface: Res<resources::Surface>,

@@ -1,10 +1,11 @@
 use crate::{components, resources};
 use bevy_ecs::prelude::*;
 
+/** Loads assets and spawns necessary components and resources based on request */
 pub(crate) fn load_asssets(mut commands: Commands, ctx: Res<resources::RenderContext>, query: Query<(Entity, &components::Asset)>) {
     for (entity, asset) in query.iter() {
         match &asset.0 {
-            components::AssetType::Default => {
+            components::AssetType::Required => {
                 load_default_assets(&mut commands, &ctx);
             }
             components::AssetType::Model => {

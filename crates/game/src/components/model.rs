@@ -2,6 +2,7 @@ use crate::{resources, vertex};
 use bevy_ecs::prelude::*;
 use wgpu::util::DeviceExt;
 
+/** An initialized model, ready for use */
 #[derive(Component)]
 pub(crate) struct Model {
     pub vertex_buffer: wgpu::Buffer,

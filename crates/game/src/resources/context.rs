@@ -1,5 +1,6 @@
 use bevy_ecs::system::Resource;
 
+/** WGPU render context */
 #[derive(Resource)]
 pub struct RenderContext {
     pub device: wgpu::Device,
