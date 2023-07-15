@@ -1,44 +1,34 @@
-use std::iter;
+use bevy_ecs::system::Resource;
 use winit::event_loop::EventLoopWindowTarget;
 
-pub(crate) struct RenderState {
+pub struct RenderState {
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
     pub target_format: wgpu::TextureFormat,
 }
 
-pub(crate) struct SurfaceState {
+pub struct SurfaceState {
     pub window: winit::window::Window,
     pub surface: wgpu::Surface,
 }
 
-pub(crate) struct State {
-    instance: wgpu::Instance,
-    adapter: Option<wgpu::Adapter>,
+#[derive(Resource)]
+pub struct State {
+    pub instance: wgpu::Instance,
+    pub adapter: Option<wgpu::Adapter>,
     pub surface_state: Option<SurfaceState>,
     pub render_state: Option<RenderState>,
 }
 
 impl State {
-    pub fn new(instance: wgpu::Instance) -> Self {
-        Self {
-            instance,
-            adapter: None,
-            surface_state: None,
-            render_state: None,
-        }
-    }
-}
-
-impl State {
-    pub fn create_surface<T>(&mut self, event_loop: &EventLoopWindowTarget<T>) {
+    fn create_surface<T>(&mut self, event_loop: &EventLoopWindowTarget<T>) {
         let window = winit::window::Window::new(event_loop).unwrap();
         log::info!("WGPU: creating surface for native window");
         let surface = unsafe { self.instance.create_surface(&window).unwrap() };
         self.surface_state = Some(SurfaceState { window, surface });
     }
 
-    pub async fn init_render_state(adapter: &wgpu::Adapter, target_format: wgpu::TextureFormat) -> RenderState {
+    async fn init_render_state(adapter: &wgpu::Adapter, target_format: wgpu::TextureFormat) -> RenderState {
         log::info!("Initializing render state");
         log::info!("WGPU: requesting device");
 
@@ -63,7 +53,7 @@ impl State {
         }
     }
 
-    pub async fn ensure_render_state_for_surface(&mut self) {
+    async fn ensure_render_state_for_surface(&mut self) {
         if let Some(surface_state) = &self.surface_state {
             if self.adapter.is_none() {
                 log::info!("WGPU: requesting a suitable adapter (compatible with our surface)");
@@ -98,7 +88,7 @@ impl State {
         }
     }
 
-    pub fn configure_surface_swapchain(&mut self) {
+    pub fn configure_surface(&mut self) {
         if let (Some(render_state), Some(surface_state)) = (&self.render_state, &self.surface_state) {
             let swapchain_format = render_state.target_format;
             let size = surface_state.window.inner_size();
@@ -118,51 +108,23 @@ impl State {
         }
     }
 
-    pub fn queue_redraw(&self) {
-        if let Some(surface_state) = &self.surface_state {
-            surface_state.window.request_redraw();
-        }
-    }
-
     pub fn resume<T>(&mut self, event_loop: &EventLoopWindowTarget<T>) {
         log::info!("Resumed, creating render state...");
+
         self.create_surface(event_loop);
+        self.configure_surface();
         pollster::block_on(self.ensure_render_state_for_surface());
-        self.configure_surface_swapchain();
+        self.configure_surface();
         self.queue_redraw();
     }
 
-    pub fn render(&self) {
-        if let Some(ref surface_state) = self.surface_state {
-            if let Some(ref rs) = self.render_state {
-                let frame = surface_state
-                    .surface
-                    .get_current_texture()
-                    .expect("Failed to acquire next swap chain texture");
-                let view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
+    pub fn pause(&mut self) {
+        self.render_state = None;
+    }
 
-                let mut encoder = rs.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                    label: Some("Render Encoder"),
-                });
-
-                {
-                    let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                        label: Some("Render Pass"),
-                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                            view: &view,
-                            resolve_target: None,
-                            ops: wgpu::Operations {
-                                load: wgpu::LoadOp::Clear(wgpu::Color::BLUE),
-                                store: true,
-                            },
-                        })],
-                        depth_stencil_attachment: None,
-                    });
-                }
-
-                rs.queue.submit(iter::once(encoder.finish()));
-                frame.present();
-            }
+    pub fn queue_redraw(&self) {
+        if let Some(surface_state) = &self.surface_state {
+            surface_state.window.request_redraw();
         }
     }
 }
