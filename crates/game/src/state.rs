@@ -41,6 +41,13 @@ impl State {
 
                 log::info!("WGPU: Configuring surface swapchain: format = {swapchain_format:?}, size = {size:?}");
                 surface.surface.configure(&ctx.device, &config);
+
+                self.world.insert_resource(resources::Msaa::new(
+                    ctx,
+                    resources::Msaa::get_max_sample_count(surface, ctx.target_format),
+                    size.width,
+                    size.height,
+                ));
             }
         }
     }
